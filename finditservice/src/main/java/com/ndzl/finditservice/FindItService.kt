@@ -61,6 +61,11 @@ class FindItService : Service() {
 
     public fun sayHello() {
         Log.d("FINDIT SERVICE", "Hello from service!")
+
+        //start activity ServiceActivity
+        val intent = Intent(this, ServiceActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
     }
 
     override fun onBind(intent: Intent): IBinder {

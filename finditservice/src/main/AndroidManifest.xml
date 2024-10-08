@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <queries>
+        <package android:name="com.ndzl.finditservice" />
+    </queries>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -8,6 +12,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.FINDITAPISCOUTER">
+        <activity
+            android:name=".ServiceActivity"
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -23,9 +30,5 @@
             android:enabled="true"
             android:exported="true" />
     </application>
-
-    <queries>
-        <package android:name="com.ndzl.finditservice" />
-    </queries>
 
 </manifest>

@@ -1,8 +1,7 @@
 package com.ndzl.finditAPI
 
-import android.app.Service
+import android.app.Application
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
@@ -16,20 +15,43 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.ndzl.finditlib.FinditAPI
+import com.ndzl.finditlib.FinditLib
 
 class MainActivity : AppCompatActivity() {
+
+    lateinit var finditLIB: FinditLib
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
 
+        finditLIB = FinditLib()
+        finditLIB.libInit( this )
     }
 
     fun onClickbtn_SCAN(v: View?) {
         try {
+
+            //put a View in a Bundle? no!
+            val newTextView = TextView(this)
+            newTextView.text = "Dynamically added TextView. The consumer app passed this view to the library."
+            val params = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            newTextView.layoutParams = params
+
+            val bundle = Bundle()
+         //   bundle.putParcelable("view", newTextView)  //!! CAN'T BE DONE
+
+
+            //send the bundle to the finditservice
+            val intent = Intent()
+            intent.component = ComponentName("com.ndzl.finditservice", "com.ndzl.finditservice.FindItService")
+            intent.putExtra("view", bundle)
+            startService(intent)
+
 
         } catch (e: Exception) {
             Log.e("TAG", "onClickbtn_SCAN " + e.message)
@@ -37,16 +59,16 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    val finditAPI = FinditAPI()
+
     fun onClickbtn_SWITCH_ONE(v: View?) {
         try {
 
-            FinditAPI.whoAreYou()
+            FinditLib.whoAreYou()
 
             //get parent layout
             val parentLayout: ViewGroup = findViewById(R.id.linearLayout1)
 
-            finditAPI.dynamicallyDisplayInternalView(this, parentLayout)
+            finditLIB.dynamicallyDisplayInternalView(this, parentLayout)
 
 
         } catch (e: Exception) {
@@ -67,7 +89,7 @@ class MainActivity : AppCompatActivity() {
             newTextView.layoutParams = params
 
             val parentLayout: ViewGroup = findViewById(R.id.linearLayout1)
-            finditAPI.dynamicallyDisplayParametricView(this, parentLayout, newTextView)
+            finditLIB.dynamicallyDisplayParametricView(this, parentLayout, newTextView)
 
         } catch (e: Exception) {
             Log.e("TAG", "onClickbtn_SWITCH_TWO " + e.message)
@@ -91,8 +113,6 @@ class MainActivity : AppCompatActivity() {
 
             mService = Messenger(service)
             mBound = true
-
-
 
         }
 
@@ -146,14 +166,19 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
+/*//MOVING THE BINDING TO THE FAT LIBRARY
         val intent = Intent()
         intent.component = ComponentName("com.ndzl.finditservice", "com.ndzl.finditservice.FindItService")
 
         bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        */
+
+
     }
 
     fun onClickbtn_SWITCH_THREE(v: View?) {
         try {
+/*
 
             //(mService.sayHello()) for local service
 
@@ -161,7 +186,8 @@ class MainActivity : AppCompatActivity() {
             callServiceSayHello()
             callServiceGetRnd()
 
-
+*/
+            finditLIB.libCallServiceGetRnd()
 
         } catch (e: Exception) {
             Log.e("TAG", "onClickbtn_SWITCH_THREE " + e.message)
