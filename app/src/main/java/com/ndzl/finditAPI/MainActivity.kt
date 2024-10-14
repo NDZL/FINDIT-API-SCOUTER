@@ -1,6 +1,5 @@
 package com.ndzl.finditAPI
 
-import android.app.Application
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
@@ -43,7 +42,7 @@ class MainActivity : AppCompatActivity() {
             newTextView.layoutParams = params
 
             val bundle = Bundle()
-         //   bundle.putParcelable("view", newTextView)  //!! CAN'T BE DONE
+            //   bundle.putParcelable("view", newTextView)  //!! CAN'T BE DONE
 
 
             //send the bundle to the finditservice
@@ -166,31 +165,47 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-/*//MOVING THE BINDING TO THE FAT LIBRARY
-        val intent = Intent()
-        intent.component = ComponentName("com.ndzl.finditservice", "com.ndzl.finditservice.FindItService")
+        /*//MOVING THE BINDING TO THE FAT LIBRARY
+                val intent = Intent()
+                intent.component = ComponentName("com.ndzl.finditservice", "com.ndzl.finditservice.FindItService")
 
-        bindService(intent, connection, Context.BIND_AUTO_CREATE)
-        */
+                bindService(intent, connection, Context.BIND_AUTO_CREATE)
+                */
 
 
     }
 
     fun onClickbtn_SWITCH_THREE(v: View?) {
         try {
-/*
+            /*
 
-            //(mService.sayHello()) for local service
+                        //(mService.sayHello()) for local service
 
-            //calling SayHello via Messenger
-            callServiceSayHello()
-            callServiceGetRnd()
+                        //calling SayHello via Messenger
+                        callServiceSayHello()
+                        callServiceGetRnd()
 
-*/
+            */
             finditLIB.libCallServiceGetRnd()
 
         } catch (e: Exception) {
             Log.e("TAG", "onClickbtn_SWITCH_THREE " + e.message)
+        }
+    }
+
+    var isRunning: Boolean = false
+    fun onClickbtn_SWITCH_FOUR(v: View?) {
+        try {
+            if(!isRunning) {
+                isRunning = true
+                finditLIB.libCallServiceRFIDInit()
+                finditLIB.libCallServiceRFIDStart()
+            } else {
+                isRunning = false
+                finditLIB.libCallServiceRFIDStop()
+            }
+        } catch (e: Exception) {
+            Log.e("TAG", "onClickbtn_SWITCH_FOUR " + e.message)
         }
     }
 }

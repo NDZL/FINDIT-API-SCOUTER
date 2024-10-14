@@ -5,19 +5,27 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.os.Build
+import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Message
 import android.os.Messenger
+import android.os.Parcel
+import android.os.Parcelable
 import android.os.RemoteException
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.annotation.RequiresApi
+import kotlinx.parcelize.Parceler
+import kotlinx.parcelize.Parcelize
+
 
 
 class FinditLib {
-    
+
     fun libInit(appctx: Context) {
         val intent = Intent()
         intent.component = ComponentName("com.ndzl.finditservice", "com.ndzl.finditservice.FindItService")
@@ -28,7 +36,8 @@ class FinditLib {
 
     private var mService: Messenger? = null
     private var mBound: Boolean = false
-    val MSG_SAY_HELLO = 111
+
+
     private val connection = object : ServiceConnection {
 
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -47,9 +56,16 @@ class FinditLib {
     }
 
 
+
     inner class IncomingHandler : Handler() {
+        @RequiresApi(Build.VERSION_CODES.TIRAMISU)
         override fun handleMessage(msg: Message) {
-            Log.i("FinditLib","IncomingHandler/handleMessage "+msg.what)
+            Log.i("FinditLib","IncomingHandler/handleMessage "+msg.what/*+" "+msg.obj.toString()*/)
+            if(msg.obj != null){
+                val bundle = msg.obj as Bundle
+                val rfidRes = bundle.getString("rfidEPC")
+                println("FinditLib/handleMessage RFID EPC: ${rfidRes.toString()}")
+            }
         }
     }
 
@@ -65,6 +81,39 @@ class FinditLib {
 
     fun libCallServiceGetRnd(){
         val msg = android.os.Message.obtain(null, MSG_GET_RND)
+        msg.replyTo = Messenger(IncomingHandler())
+        try {
+            mService?.send(msg)
+        } catch (e: RemoteException) {
+            e.printStackTrace()
+        }
+    }
+
+
+
+    fun libCallServiceRFIDInit(){
+        val msg = android.os.Message.obtain(null, MSG_RFID_INIT)
+        msg.replyTo = Messenger(IncomingHandler())
+        try {
+            mService?.send(msg)
+        } catch (e: RemoteException) {
+            e.printStackTrace()
+        }
+    }
+
+    fun libCallServiceRFIDStart(){
+        val msg = android.os.Message.obtain(null, MSG_RFID_TRIGGER_START)
+        msg.replyTo = Messenger(IncomingHandler())
+        try {
+            mService?.send(msg)
+        } catch (e: RemoteException) {
+            e.printStackTrace()
+        }
+    }
+
+
+    fun libCallServiceRFIDStop(){
+        val msg = android.os.Message.obtain(null, MSG_RFID_TRIGGER_STOP)
         msg.replyTo = Messenger(IncomingHandler())
         try {
             mService?.send(msg)
@@ -97,10 +146,14 @@ class FinditLib {
 
     companion object
     {
+        val MSG_SAY_HELLO = 111
         val MSG_GET_RND = 222
+        val MSG_RFID_INIT = 10111
+        val MSG_RFID_TRIGGER_START = 10222
+        val MSG_RFID_TRIGGER_STOP = 10333
 
         fun whoAreYou() {
-            println("This is  the FinditAPI class.")
+            println("This is  the FinditLib class.")
         }
     }
 }
