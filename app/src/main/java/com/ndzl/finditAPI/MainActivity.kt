@@ -3,6 +3,7 @@ package com.ndzl.finditAPI
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
@@ -17,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.ndzl.finditlib.FinditLib
 import com.ndzl.finditlib.RFIDEvent
 import com.ndzl.finditlib.RFIDEventListener
+import java.util.Random
 
 class MainActivity : AppCompatActivity() {
 
@@ -93,7 +95,12 @@ class MainActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
+
             newTextView.layoutParams = params
+            newTextView.id = View.generateViewId()
+            val rnd = Random()
+            val color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256))
+            newTextView.setBackgroundColor(color)
 
             val parentLayout: ViewGroup = findViewById(R.id.linearLayout1)
             finditLIB.dynamicallyDisplayParametricView(this, parentLayout, newTextView)
@@ -222,7 +229,7 @@ class MainActivity : AppCompatActivity() {
         override fun eventReadNotify(event: RFIDEvent) {
 
             println("--- MainActivity --- Event received EPC=${event.rfidEPC}")
-            tvOut!!.setText("EPC: ${event.rfidEPC}")
+            tvOut!!.setText("XML Defined View. EPC: ${event.rfidEPC}")
 
         }
     }

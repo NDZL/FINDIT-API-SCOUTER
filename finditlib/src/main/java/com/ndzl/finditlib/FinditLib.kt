@@ -94,6 +94,11 @@ class FinditLib {
 
                     rfidEventRelay.triggerEvent(RFIDEvent(rfidRes.toString()))
 
+                    if(customView !=null){
+                        val ctv = customView as TextView
+                        ctv.text = "Dynamically added Custom View. EPC: "+rfidRes.toString()
+                    }
+
 
                 }
             }
@@ -167,9 +172,13 @@ class FinditLib {
     }
 
 
+    var customViewID: Int = 0
+    var customView: View? = null
     fun dynamicallyDisplayParametricView(consumerContext: Context, parentLayout: ViewGroup, viewToBeDisplayed: View) {
 
         parentLayout.addView(viewToBeDisplayed,  parentLayout.childCount)
+        customViewID = viewToBeDisplayed.id
+        customView = viewToBeDisplayed
 
     }
 

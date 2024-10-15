@@ -31,7 +31,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="onClickbtn_SWITCH_TWO"
-        android:text="2" />
+        android:text="DYN" />
 
     <Button
         android:id="@+id/btn_SWITCH_THREE"
