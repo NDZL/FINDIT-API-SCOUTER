@@ -15,18 +15,26 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.ndzl.finditlib.FinditLib
+import com.ndzl.finditlib.RFIDEvent
+import com.ndzl.finditlib.RFIDEventListener
 
 class MainActivity : AppCompatActivity() {
 
     lateinit var finditLIB: FinditLib
+    lateinit var finditServiceEventListener: RFIDEventListenerImpl
+
+    var tvOut : TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
+        tvOut = findViewById<TextView>(R.id.tvOut)
 
         finditLIB = FinditLib()
         finditLIB.libInit( this )
+        finditServiceEventListener = RFIDEventListenerImpl()
+        FinditLib.rfidEventRelay.addListener(finditServiceEventListener)
     }
 
     fun onClickbtn_SCAN(v: View?) {
@@ -206,6 +214,16 @@ class MainActivity : AppCompatActivity() {
             }
         } catch (e: Exception) {
             Log.e("TAG", "onClickbtn_SWITCH_FOUR " + e.message)
+        }
+    }
+
+
+    inner class RFIDEventListenerImpl : RFIDEventListener {
+        override fun eventReadNotify(event: RFIDEvent) {
+
+            println("--- MainActivity --- Event received EPC=${event.rfidEPC}")
+            tvOut!!.setText("EPC: ${event.rfidEPC}")
+
         }
     }
 }

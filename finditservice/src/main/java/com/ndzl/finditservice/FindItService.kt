@@ -11,11 +11,15 @@ import android.os.Messenger
 import android.os.Parcelable
 import android.os.RemoteException
 import android.util.Log
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.parcelize.Parceler
 import java.util.Random
 import kotlin.collections.forEach
 import kotlin.collections.remove
 import kotlinx.parcelize.Parcelize
+import kotlin.concurrent.thread
 
 data class RFIDEvent(val rfidEPC: String)
 /*
@@ -40,6 +44,7 @@ class RFIDEventGenerator {
     }
 
     fun triggerEvent(msg: Message) {
+
         val randomNumber = (100..999).random()
         val event = RFIDEvent(""+randomNumber)
         listeners.forEach { it.eventReadNotify(event, msg) }
@@ -47,7 +52,7 @@ class RFIDEventGenerator {
 }
 
 
-
+var mustLoop = true
 
 
 
@@ -66,13 +71,16 @@ class FindItService : Service() {
     val MSG_RFID_INIT = 10111
     val MSG_RFID_TRIGGER_START = 10222
     val MSG_RFID_TRIGGER_STOP = 10333
+    val MSG_RFID_RESULT = 10999
 
 
     private val messenger = Messenger(IncomingHandler())
 
+
     inner class IncomingHandler : Handler() {
         override fun handleMessage(msg: Message) {
             print("IncomingHandler/handleMessage")
+
             when (msg.what) {
                 MSG_SAY_HELLO -> {
                     // Invoke service method
@@ -93,24 +101,19 @@ class FindItService : Service() {
                     eventGenerator.addListener(eventListener)
                 }
                 MSG_RFID_TRIGGER_START -> {
-                    mustLoop = true
-
-                    //repeat triggerEvent every 1 second
-                    while(mustLoop){
-                        Thread.sleep(
-                            (500..900).random().toLong()
-                        )
+                    mustLoop=true
+                    for (i in 1..100) {
                         eventGenerator.triggerEvent(msg)
+                        Thread.sleep(300)
                     }
-
                 }
                 MSG_RFID_TRIGGER_STOP -> {
                     mustLoop = false
-                    eventGenerator.removeListener(eventListener)
                 }
                 else -> super.handleMessage(msg)
                 // Handle other messages
             }
+            println("end of when block")
         }
     }
     /*
@@ -120,6 +123,21 @@ class FindItService : Service() {
             fun getService(): FindItService = this@FindItService
         }
     */
+
+    private fun startRepeatingTask(timeInterval: Long) {
+        val handler = android.os.Handler()
+        val runnable = object : Runnable {
+            override fun run() {
+                if(mustLoop) {
+                    Log.d("OCR", "startRepeatingTask ")
+
+                }
+                handler.postDelayed(this, timeInterval)
+
+            }
+        }
+        handler.postDelayed(runnable, timeInterval)
+    }
 
     lateinit var eventGenerator: RFIDEventGenerator
     lateinit var eventListener: RFIDEventListenerImpl
@@ -132,12 +150,12 @@ class FindItService : Service() {
 
             bundleResult.putString("rfidEPC", event.rfidEPC )
             if(msg != null)
-                msg.replyTo.send(Message.obtain(null, 10999, bundleResult))
+                msg.replyTo.send(Message.obtain(null, MSG_RFID_RESULT, bundleResult))
 
         }
     }
 
-    var mustLoop = true
+
 
     public fun sayHello() {
         Log.d("FINDIT SERVICE", "Hello from service!")

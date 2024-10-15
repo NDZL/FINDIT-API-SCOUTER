@@ -23,12 +23,37 @@ import kotlinx.parcelize.Parceler
 import kotlinx.parcelize.Parcelize
 
 
+data class RFIDEvent(val rfidEPC: String)
+
+interface RFIDEventListener {
+    fun eventReadNotify(event: RFIDEvent)
+}
+class RFIDEventRelay {
+    private val listeners = mutableListOf<RFIDEventListener>()
+
+    fun addListener(listener: RFIDEventListener) {
+        listeners.add(listener)
+    }
+
+    fun removeListener(listener: RFIDEventListener) {
+        listeners.remove(listener)
+    }
+
+    fun triggerEvent(ev: RFIDEvent) {
+        listeners.forEach { it.eventReadNotify(ev) }
+    }
+}
+
+
+
 
 class FinditLib {
 
     fun libInit(appctx: Context) {
         val intent = Intent()
         intent.component = ComponentName("com.ndzl.finditservice", "com.ndzl.finditservice.FindItService")
+
+        rfidEventRelay = RFIDEventRelay()
 
         appctx.bindService(intent, connection, Context.BIND_AUTO_CREATE)
         println("FinditLib initialized.")
@@ -65,6 +90,12 @@ class FinditLib {
                 val bundle = msg.obj as Bundle
                 val rfidRes = bundle.getString("rfidEPC")
                 println("FinditLib/handleMessage RFID EPC: ${rfidRes.toString()}")
+                if(msg.what==MSG_RFID_RESULT){
+
+                    rfidEventRelay.triggerEvent(RFIDEvent(rfidRes.toString()))
+
+
+                }
             }
         }
     }
@@ -151,9 +182,12 @@ class FinditLib {
         val MSG_RFID_INIT = 10111
         val MSG_RFID_TRIGGER_START = 10222
         val MSG_RFID_TRIGGER_STOP = 10333
+        val MSG_RFID_RESULT = 10999
 
         fun whoAreYou() {
             println("This is  the FinditLib class.")
         }
+
+        lateinit var rfidEventRelay: RFIDEventRelay
     }
 }
